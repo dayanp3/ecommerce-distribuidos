@@ -6,7 +6,7 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_USER: ecom
-      POSTGRES_PASSWORD: ecom123
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: tienda
     volumes:
       - db_data:/var/lib/postgresql/data
@@ -37,7 +37,7 @@ services:
       PORT: 3000
       DB_HOST: db
       DB_USER: ecom
-      DB_PASSWORD: ecom123
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
       DB_NAME: tienda
       REDIS_HOST: redis
       SMTP_HOST: mail
