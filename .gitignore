@@ -1,0 +1,19 @@
+# Dependencias (se reinstalan con npm install / docker build)
+node_modules/
+api/node_modules/
+
+# Logs y temporales
+*.log
+npm-debug.log*
+
+# Variables de entorno con secretos
+.env
+*.env
+
+# Sistema
+.DS_Store
+Thumbs.db
+
+# Credenciales de Cloudflare (NUNCA subir al repo)
+.cloudflared/
+*.json.cloudflared

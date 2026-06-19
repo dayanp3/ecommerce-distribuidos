@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tienda Distribuidos</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: system-ui, sans-serif; background: #0f1117; color: #e7e9ee; }
+  header { background: #161a23; padding: 18px 24px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #232838; }
+  header h1 { font-size: 20px; color: #6ea8fe; }
+  .cart-btn { background: #2563eb; border: none; color: #fff; padding: 10px 16px; border-radius: 8px; cursor: pointer; font-size: 14px; }
+  main { max-width: 1100px; margin: 0 auto; padding: 24px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px,1fr)); gap: 16px; }
+  .card { background: #161a23; border: 1px solid #232838; border-radius: 12px; padding: 18px; }
+  .emoji { font-size: 48px; text-align: center; margin-bottom: 10px; }
+  .card h3 { font-size: 15px; margin-bottom: 6px; }
+  .card p { font-size: 13px; color: #9aa3b2; min-height: 34px; }
+  .price { color: #4ade80; font-weight: 700; font-size: 17px; margin: 10px 0; }
+  .add { width: 100%; background: #232838; border: 1px solid #2f3650; color: #e7e9ee; padding: 9px; border-radius: 8px; cursor: pointer; }
+  .add:hover { background: #2f3650; }
+  .drawer { position: fixed; top: 0; right: -420px; width: 380px; max-width: 90vw; height: 100%; background: #161a23; border-left: 1px solid #232838; transition: right .25s; padding: 24px; overflow-y: auto; }
+  .drawer.open { right: 0; }
+  .drawer h2 { margin-bottom: 16px; }
+  .item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #232838; font-size: 14px; }
+  input { width: 100%; padding: 10px; margin: 6px 0; background: #0f1117; border: 1px solid #2f3650; border-radius: 8px; color: #e7e9ee; }
+  .checkout { width: 100%; background: #16a34a; border: none; color: #fff; padding: 12px; border-radius: 8px; cursor: pointer; margin-top: 12px; font-size: 15px; }
+  .total { font-size: 18px; font-weight: 700; margin: 14px 0; }
+  .note { font-size: 12px; color: #9aa3b2; margin-top: 16px; }
+  .note a { color: #6ea8fe; }
+  .msg { background: #16351f; border: 1px solid #16a34a; padding: 12px; border-radius: 8px; margin: 10px 0; font-size: 14px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>🛒 Tienda Distribuidos</h1>
+  <button class="cart-btn" onclick="toggleCart()">Carrito (<span id="count">0</span>)</button>
+</header>
+
+<main>
+  <div class="grid" id="grid">Cargando productos...</div>
+</main>
+
+<div class="drawer" id="drawer">
+  <h2>Tu carrito</h2>
+  <div id="cartItems"></div>
+  <div class="total">Total: $<span id="total">0</span></div>
+  <div id="result"></div>
+  <input id="cliente" placeholder="Tu nombre">
+  <input id="email" placeholder="Tu correo">
+  <button class="checkout" onclick="checkout()">Finalizar compra</button>
+  <p class="note">El correo de confirmacion llega a la bandeja de <a href="/mail/" target="_blank">MailHog</a>.</p>
+</div>
+
+<script>
+const SESION = "demo-" + Math.random().toString(36).slice(2, 8);
+let productos = [];
+let carrito = [];
+
+async function cargar() {
+  const r = await fetch("/api/productos");
+  productos = await r.json();
+  document.getElementById("grid").innerHTML = productos.map(p => `
+    <div class="card">
+      <div class="emoji">${p.imagen || "📦"}</div>
+      <h3>${p.nombre}</h3>
+      <p>${p.descripcion || ""}</p>
+      <div class="price">$${Number(p.precio).toLocaleString()}</div>
+      <button class="add" onclick="agregar(${p.id})">Agregar al carrito</button>
+    </div>`).join("");
+}
+
+function agregar(id) {
+  const p = productos.find(x => x.id === id);
+  const e = carrito.find(x => x.id === id);
+  if (e) e.cantidad++; else carrito.push({ id: p.id, nombre: p.nombre, precio: Number(p.precio), cantidad: 1 });
+  guardar();
+  render();
+}
+
+async function guardar() {
+  await fetch("/api/carrito/" + SESION, {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ items: carrito })
+  });
+}
+
+function render() {
+  const cont = carrito.reduce((s, i) => s + i.cantidad, 0);
+  const total = carrito.reduce((s, i) => s + i.precio * i.cantidad, 0);
+  document.getElementById("count").textContent = cont;
+  document.getElementById("total").textContent = total.toLocaleString();
+  document.getElementById("cartItems").innerHTML = carrito.length
+    ? carrito.map(i => `<div class="item"><span>${i.nombre} x${i.cantidad}</span><span>$${(i.precio*i.cantidad).toLocaleString()}</span></div>`).join("")
+    : "<p style='color:#9aa3b2'>Vacio</p>";
+}
+
+function toggleCart() { document.getElementById("drawer").classList.toggle("open"); }
+
+async function checkout() {
+  const cliente = document.getElementById("cliente").value;
+  const email = document.getElementById("email").value;
+  if (!cliente || !email || !carrito.length) { alert("Completa nombre, correo y agrega productos"); return; }
+  const r = await fetch("/api/checkout", {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ cliente, email, items: carrito, sesion: SESION })
+  });
+  const d = await r.json();
+  if (d.ok) {
+    document.getElementById("result").innerHTML =
+      `<div class="msg">Pedido #${d.pedidoId} confirmado. Total $${d.total.toLocaleString()}. Revisa el correo en MailHog.</div>`;
+    carrito = []; render();
+  } else {
+    alert("Error: " + (d.error || "desconocido"));
+  }
+}
+
+cargar();
+render();
+</script>
+</body>
+</html>
