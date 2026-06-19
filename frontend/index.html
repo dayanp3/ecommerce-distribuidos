@@ -3,120 +3,451 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Tienda Distribuidos</title>
+<title>NEXUS Games — Tienda de Videojuegos y Consolas</title>
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: system-ui, sans-serif; background: #0f1117; color: #e7e9ee; }
-  header { background: #161a23; padding: 18px 24px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #232838; }
-  header h1 { font-size: 20px; color: #6ea8fe; }
-  .cart-btn { background: #2563eb; border: none; color: #fff; padding: 10px 16px; border-radius: 8px; cursor: pointer; font-size: 14px; }
-  main { max-width: 1100px; margin: 0 auto; padding: 24px; }
-  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px,1fr)); gap: 16px; }
-  .card { background: #161a23; border: 1px solid #232838; border-radius: 12px; padding: 18px; }
-  .emoji { font-size: 48px; text-align: center; margin-bottom: 10px; }
-  .card h3 { font-size: 15px; margin-bottom: 6px; }
-  .card p { font-size: 13px; color: #9aa3b2; min-height: 34px; }
-  .price { color: #4ade80; font-weight: 700; font-size: 17px; margin: 10px 0; }
-  .add { width: 100%; background: #232838; border: 1px solid #2f3650; color: #e7e9ee; padding: 9px; border-radius: 8px; cursor: pointer; }
-  .add:hover { background: #2f3650; }
-  .drawer { position: fixed; top: 0; right: -420px; width: 380px; max-width: 90vw; height: 100%; background: #161a23; border-left: 1px solid #232838; transition: right .25s; padding: 24px; overflow-y: auto; }
-  .drawer.open { right: 0; }
-  .drawer h2 { margin-bottom: 16px; }
-  .item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #232838; font-size: 14px; }
-  input { width: 100%; padding: 10px; margin: 6px 0; background: #0f1117; border: 1px solid #2f3650; border-radius: 8px; color: #e7e9ee; }
-  .checkout { width: 100%; background: #16a34a; border: none; color: #fff; padding: 12px; border-radius: 8px; cursor: pointer; margin-top: 12px; font-size: 15px; }
-  .total { font-size: 18px; font-weight: 700; margin: 14px 0; }
-  .note { font-size: 12px; color: #9aa3b2; margin-top: 16px; }
-  .note a { color: #6ea8fe; }
-  .msg { background: #16351f; border: 1px solid #16a34a; padding: 12px; border-radius: 8px; margin: 10px 0; font-size: 14px; }
+  :root{
+    --bg:#f5f6f8; --surface:#fff; --ink:#0f172a; --ink2:#334155; --muted:#64748b;
+    --line:#e5e7eb; --tile:#f1f3f5; --accent:#4f46e5; --accent-d:#4338ca;
+    --green:#059669; --sale:#dc2626; --gold:#f59e0b;
+    --shadow:0 1px 3px rgba(15,23,42,.08); --shadow-l:0 10px 30px rgba(15,23,42,.12);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Inter','Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.5;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  img{display:block;max-width:100%}
+  button{font-family:inherit}
+  ::selection{background:var(--accent);color:#fff}
+
+  .topbar{background:var(--ink);color:#e2e8f0;text-align:center;font-size:12.5px;padding:8px;letter-spacing:.2px}
+  .topbar b{color:#fff}
+
+  /* Header */
+  header{position:sticky;top:0;z-index:50;background:var(--surface);border-bottom:1px solid var(--line);box-shadow:var(--shadow)}
+  .nav{max-width:1200px;margin:auto;display:flex;align-items:center;gap:24px;padding:16px 20px}
+  .logo{display:flex;align-items:center;gap:9px;font-size:20px;font-weight:800;letter-spacing:-.3px;cursor:pointer;white-space:nowrap}
+  .logo .mark{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--accent),#7c3aed);display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;font-weight:900}
+  .logo span{color:var(--muted);font-weight:600}
+  .search{flex:1;display:flex;align-items:center;background:var(--bg);border:1px solid var(--line);border-radius:10px;max-width:540px;padding:0 12px;transition:.15s}
+  .search:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px rgba(79,70,229,.12)}
+  .search svg{width:18px;height:18px;color:var(--muted);flex-shrink:0}
+  .search input{flex:1;background:none;border:none;color:var(--ink);padding:11px 10px;font-size:14px;outline:none}
+  .cart-btn{display:flex;align-items:center;gap:8px;position:relative;background:var(--ink);border:none;color:#fff;padding:11px 18px;border-radius:10px;cursor:pointer;font-size:14px;font-weight:600;white-space:nowrap}
+  .cart-btn:hover{background:#1e293b}
+  .cart-btn svg{width:18px;height:18px}
+  .badge{position:absolute;top:-7px;right:-7px;background:var(--accent);color:#fff;font-size:11px;font-weight:700;min-width:20px;height:20px;border-radius:10px;display:flex;align-items:center;justify-content:center;padding:0 5px;border:2px solid var(--surface)}
+
+  /* Categorías */
+  .cats{border-bottom:1px solid var(--line);background:var(--surface)}
+  .cats-in{max-width:1200px;margin:auto;display:flex;gap:6px;padding:0 20px;overflow-x:auto}
+  .pill{background:none;border:none;border-bottom:2px solid transparent;color:var(--muted);padding:14px 14px;cursor:pointer;font-size:14px;font-weight:600;white-space:nowrap;transition:.15s}
+  .pill:hover{color:var(--ink)}
+  .pill.active{color:var(--accent);border-bottom-color:var(--accent)}
+
+  /* Hero */
+  .hero{max-width:1200px;margin:24px auto 0;padding:0 20px}
+  .slide{border-radius:16px;padding:46px 44px;position:relative;overflow:hidden;display:none;min-height:220px;color:#fff}
+  .slide.on{display:flex;flex-direction:column;justify-content:center;animation:fade .5s}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .slide .kicker{font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;opacity:.85;margin-bottom:10px}
+  .slide h2{font-size:32px;font-weight:800;letter-spacing:-.5px;margin-bottom:10px;max-width:560px}
+  .slide p{font-size:15px;opacity:.9;margin-bottom:20px;max-width:480px}
+  .slide .cta{background:#fff;color:var(--ink);border:none;padding:12px 22px;border-radius:9px;font-weight:700;cursor:pointer;width:fit-content;font-size:14px}
+  .slide .cta:hover{background:#f1f5f9}
+  .dots{display:flex;gap:7px;justify-content:center;margin-top:16px}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--line);cursor:pointer;border:none;transition:.2s}
+  .dot.on{background:var(--accent);width:22px;border-radius:4px}
+
+  main{max-width:1200px;margin:auto;padding:8px 20px 60px}
+  .sec-head{display:flex;align-items:baseline;justify-content:space-between;margin:28px 0 18px;gap:10px;flex-wrap:wrap}
+  .sec-head h2{font-size:22px;font-weight:800;letter-spacing:-.4px}
+  .sec-head .count{color:var(--muted);font-size:13.5px}
+
+  /* Grid */
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:20px}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden;cursor:pointer;transition:.18s;display:flex;flex-direction:column}
+  .card:hover{box-shadow:var(--shadow-l);transform:translateY(-3px)}
+  .tile{position:relative;aspect-ratio:4/5;background:var(--tile);display:flex;align-items:center;justify-content:center;padding:14px}
+  .tile img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 6px 12px rgba(0,0,0,.18))}
+  .plat{position:absolute;top:10px;left:10px;background:rgba(255,255,255,.92);color:var(--ink2);font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px;border:1px solid var(--line)}
+  .off{position:absolute;top:10px;right:10px;background:var(--sale);color:#fff;font-size:12px;font-weight:800;padding:3px 8px;border-radius:6px}
+  .body{padding:14px 15px 16px;display:flex;flex-direction:column;gap:7px;flex:1}
+  .tag{font-size:11px;color:var(--accent);font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+  .card h3{font-size:14.5px;font-weight:700;line-height:1.35;color:var(--ink);min-height:39px}
+  .rate{font-size:12.5px;color:var(--muted);font-weight:600}
+  .rate b{color:var(--gold)}
+  .price-row{display:flex;align-items:baseline;gap:8px;margin-top:auto;padding-top:4px}
+  .price{font-size:18px;font-weight:800;color:var(--ink)}
+  .old{font-size:13px;color:var(--muted);text-decoration:line-through}
+  .add{margin-top:10px;width:100%;background:var(--accent);border:none;color:#fff;padding:10px;border-radius:9px;cursor:pointer;font-weight:700;font-size:13px;transition:.15s}
+  .add:hover{background:var(--accent-d)}
+  .empty{grid-column:1/-1;text-align:center;color:var(--muted);padding:60px}
+
+  /* Drawer */
+  .overlay{position:fixed;inset:0;background:rgba(15,23,42,.5);opacity:0;pointer-events:none;transition:.25s;z-index:60}
+  .overlay.on{opacity:1;pointer-events:auto}
+  .drawer{position:fixed;top:0;right:-460px;width:420px;max-width:92vw;height:100%;background:var(--surface);transition:right .28s;z-index:70;display:flex;flex-direction:column}
+  .drawer.open{right:0}
+  .dhead{display:flex;justify-content:space-between;align-items:center;padding:20px;border-bottom:1px solid var(--line)}
+  .dhead h2{font-size:17px;font-weight:800}
+  .x{background:none;border:none;color:var(--muted);font-size:26px;cursor:pointer;line-height:1}
+  .x:hover{color:var(--ink)}
+  .ditems{flex:1;overflow-y:auto;padding:8px 20px}
+  .citem{display:flex;gap:12px;padding:14px 0;border-bottom:1px solid var(--line)}
+  .cthumb{width:54px;height:54px;border-radius:9px;background:var(--tile);flex-shrink:0;display:flex;align-items:center;justify-content:center;padding:5px}
+  .cthumb img{width:100%;height:100%;object-fit:contain}
+  .cinfo{flex:1;min-width:0}
+  .cinfo h4{font-size:13.5px;font-weight:700;margin-bottom:3px}
+  .cinfo .cp{font-size:13.5px;color:var(--ink);font-weight:800}
+  .qty{display:flex;align-items:center;gap:9px;margin-top:8px}
+  .qty button{width:26px;height:26px;border-radius:7px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer;font-size:15px;line-height:1}
+  .qty button:hover{border-color:var(--accent);color:var(--accent)}
+  .qty .rm{margin-left:auto;color:var(--muted);background:none;border:none;cursor:pointer;font-size:12px;width:auto}
+  .qty .rm:hover{color:var(--sale)}
+  .dfoot{border-top:1px solid var(--line);padding:18px 20px;background:var(--bg)}
+  .ship{font-size:12.5px;color:var(--muted);margin-bottom:12px;text-align:center}
+  .ship b{color:var(--green)}
+  .trow{display:flex;justify-content:space-between;align-items:baseline;font-size:15px;font-weight:600;margin-bottom:14px}
+  .trow b{font-size:22px;font-weight:800}
+  .drawer input{width:100%;padding:11px 12px;margin:5px 0;background:var(--surface);border:1px solid var(--line);border-radius:9px;color:var(--ink);font-size:14px;outline:none}
+  .drawer input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(79,70,229,.1)}
+  .checkout{width:100%;background:var(--green);border:none;color:#fff;padding:13px;border-radius:10px;cursor:pointer;font-weight:700;font-size:15px;margin-top:8px}
+  .checkout:hover{background:#047857}
+  .msg{background:#ecfdf5;border:1px solid var(--green);color:#065f46;padding:14px;border-radius:10px;margin:6px 0 12px;font-size:13.5px}
+  .msg a{color:var(--green);font-weight:700}
+  .note{font-size:12px;color:var(--muted);margin-top:12px;text-align:center}
+  .note a{color:var(--accent);font-weight:600}
+
+  /* Modal */
+  .modal{position:fixed;inset:0;background:rgba(15,23,42,.5);display:none;align-items:center;justify-content:center;z-index:80;padding:20px}
+  .modal.on{display:flex}
+  .mbox{background:var(--surface);border-radius:16px;max-width:760px;width:100%;overflow:hidden;animation:fade .25s;display:grid;grid-template-columns:1fr 1fr;max-height:90vh}
+  .mtile{background:var(--tile);display:flex;align-items:center;justify-content:center;padding:30px;position:relative}
+  .mtile img{max-height:340px;object-fit:contain;filter:drop-shadow(0 12px 24px rgba(0,0,0,.2))}
+  .mbody{padding:30px;overflow-y:auto;position:relative}
+  .mbody .mx{position:absolute;top:16px;right:18px}
+  .mbody .tag{margin-bottom:8px}
+  .mbody h2{font-size:24px;font-weight:800;letter-spacing:-.5px;margin-bottom:10px}
+  .mbody .rate{margin-bottom:14px}
+  .mbody p{color:var(--ink2);margin:14px 0;font-size:14.5px}
+  .mstock{font-size:13px;color:var(--green);font-weight:600;margin:10px 0}
+  .mprice{display:flex;align-items:baseline;gap:10px;margin:16px 0}
+  .mprice .price{font-size:30px}
+  .mprice .old{font-size:18px}
+  @media(max-width:620px){.mbox{grid-template-columns:1fr;max-height:94vh}.mtile{padding:24px}.mtile img{max-height:200px}}
+
+  /* Toast */
+  .toasts{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:90;display:flex;flex-direction:column;gap:8px;align-items:center}
+  .toast{background:var(--ink);color:#fff;border:none;padding:12px 22px;border-radius:10px;font-size:13.5px;font-weight:600;box-shadow:var(--shadow-l);animation:up .3s}
+  @keyframes up{from{transform:translateY(16px);opacity:0}to{transform:translateY(0);opacity:1}}
+
+  /* Footer */
+  footer{background:var(--surface);border-top:1px solid var(--line);margin-top:20px}
+  .fin{max-width:1200px;margin:auto;padding:44px 20px;display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:30px}
+  .fin h4{font-size:14px;font-weight:800;margin-bottom:14px}
+  .fin p,.fin a{display:block;color:var(--muted);font-size:13px;margin-bottom:8px}
+  .fin a:hover{color:var(--accent)}
+  .fin .brand{font-size:16px;font-weight:800;color:var(--ink);margin-bottom:10px}
+  .fbottom{border-top:1px solid var(--line);text-align:center;padding:18px;color:var(--muted);font-size:12px}
+
+  @media(max-width:760px){
+    .search{order:3;max-width:100%;flex-basis:100%}
+    .nav{flex-wrap:wrap;gap:14px}
+    .slide{padding:34px 26px}.slide h2{font-size:24px}
+    .fin{grid-template-columns:1fr 1fr}
+  }
 </style>
 </head>
 <body>
+
+<div class="topbar">Envío <b>GRATIS</b> en compras superiores a $300.000&nbsp;&nbsp;·&nbsp;&nbsp;Garantía oficial en todos los productos&nbsp;&nbsp;·&nbsp;&nbsp;Pago contra entrega disponible</div>
+
 <header>
-  <h1>🛒 Tienda Distribuidos</h1>
-  <button class="cart-btn" onclick="toggleCart()">Carrito (<span id="count">0</span>)</button>
+  <div class="nav">
+    <div class="logo" onclick="filtrar('Todos')"><span class="mark">N</span>NEXUS <span>Games</span></div>
+    <div class="search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      <input id="q" placeholder="Buscar juegos, consolas, accesorios..." oninput="buscar(this.value)">
+    </div>
+    <button class="cart-btn" onclick="toggleCart()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"/></svg>
+      Carrito <span class="badge" id="count">0</span>
+    </button>
+  </div>
+  <div class="cats"><div class="cats-in" id="cats"></div></div>
 </header>
 
+<div class="hero">
+  <div class="slide on" style="background:linear-gradient(120deg,#4f46e5,#7c3aed)">
+    <div class="kicker">Nueva generación</div>
+    <h2>Consolas con garantía oficial</h2>
+    <p>PlayStation 5, Xbox Series X, Nintendo Switch y Steam Deck. Envío a todo el país.</p>
+    <button class="cta" onclick="filtrar('Consolas')">Ver consolas</button>
+  </div>
+  <div class="slide" style="background:linear-gradient(120deg,#0f172a,#1e3a8a)">
+    <div class="kicker">Ofertas de la semana</div>
+    <h2>Los mejores títulos con descuento</h2>
+    <p>Elden Ring, God of War, Cyberpunk 2077 y más, hasta 30% OFF.</p>
+    <button class="cta" onclick="filtrar('Videojuegos')">Ver juegos</button>
+  </div>
+  <div class="slide" style="background:linear-gradient(120deg,#047857,#0e7490)">
+    <div class="kicker">Setup gamer</div>
+    <h2>Accesorios y hardware</h2>
+    <p>Controles, mouse de precisión y tarjetas gráficas de última generación.</p>
+    <button class="cta" onclick="filtrar('Todos')">Ver todo</button>
+  </div>
+  <div class="dots" id="dots"></div>
+</div>
+
 <main>
+  <div class="sec-head">
+    <h2 id="secTitle">Catálogo completo</h2>
+    <span class="count" id="resCount"></span>
+  </div>
   <div class="grid" id="grid">Cargando productos...</div>
 </main>
 
+<div class="overlay" id="overlay" onclick="toggleCart()"></div>
 <div class="drawer" id="drawer">
-  <h2>Tu carrito</h2>
-  <div id="cartItems"></div>
-  <div class="total">Total: $<span id="total">0</span></div>
-  <div id="result"></div>
-  <input id="cliente" placeholder="Tu nombre">
-  <input id="email" placeholder="Tu correo">
-  <button class="checkout" onclick="checkout()">Finalizar compra</button>
-  <p class="note">El correo de confirmacion llega a la bandeja de <a href="/mail/" target="_blank">MailHog</a>.</p>
+  <div class="dhead"><h2>Tu carrito</h2><button class="x" onclick="toggleCart()">×</button></div>
+  <div class="ditems" id="cartItems"></div>
+  <div class="dfoot">
+    <div id="result"></div>
+    <div class="ship" id="ship"></div>
+    <div class="trow"><span>Total</span><b>$<span id="total">0</span></b></div>
+    <input id="cliente" placeholder="Nombre completo">
+    <input id="email" placeholder="Correo electrónico">
+    <input id="telefono" placeholder="Teléfono (opcional)">
+    <input id="direccion" placeholder="Dirección de envío (opcional)">
+    <button class="checkout" onclick="checkout()">Finalizar compra</button>
+    <p class="note">El correo de confirmación llega a la bandeja de <a href="/mail/" target="_blank">MailHog</a></p>
+  </div>
 </div>
 
+<div class="modal" id="modal" onclick="if(event.target.id==='modal')cerrarModal()">
+  <div class="mbox" id="mbox"></div>
+</div>
+
+<div class="toasts" id="toasts"></div>
+
+<footer>
+  <div class="fin">
+    <div>
+      <div class="brand">NEXUS Games</div>
+      <p>Tu tienda gamer de confianza. Consolas, videojuegos y accesorios originales con garantía oficial y envío a todo Colombia.</p>
+    </div>
+    <div>
+      <h4>Categorías</h4>
+      <a onclick="filtrar('Consolas')">Consolas</a>
+      <a onclick="filtrar('Videojuegos')">Videojuegos</a>
+      <a onclick="filtrar('Accesorios')">Accesorios</a>
+      <a onclick="filtrar('PC Gamer')">PC Gamer</a>
+    </div>
+    <div>
+      <h4>Ayuda</h4>
+      <p>Envíos y entregas</p>
+      <p>Garantía oficial</p>
+      <p>Medios de pago</p>
+    </div>
+    <div>
+      <h4>Contacto</h4>
+      <p>+57 313 215 1661</p>
+      <p>hola@nexusgames.lat</p>
+      <a href="/mail/" target="_blank">Bandeja MailHog</a>
+    </div>
+  </div>
+  <div class="fbottom">© 2026 NEXUS Games · Proyecto de Sistemas Distribuidos · Arquitectura de 5 servicios en Docker</div>
+</footer>
+
 <script>
-const SESION = "demo-" + Math.random().toString(36).slice(2, 8);
+const SESION = localStorage.getItem("nexus_sesion") || ("nexus-" + Math.random().toString(36).slice(2,9));
+localStorage.setItem("nexus_sesion", SESION);
 let productos = [];
-let carrito = [];
+let carrito = JSON.parse(localStorage.getItem("nexus_cart") || "[]");
+let catActiva = "Todos";
+let termino = "";
 
-async function cargar() {
-  const r = await fetch("/api/productos");
-  productos = await r.json();
-  document.getElementById("grid").innerHTML = productos.map(p => `
-    <div class="card">
-      <div class="emoji">${p.imagen || "📦"}</div>
-      <h3>${p.nombre}</h3>
-      <p>${p.descripcion || ""}</p>
-      <div class="price">$${Number(p.precio).toLocaleString()}</div>
-      <button class="add" onclick="agregar(${p.id})">Agregar al carrito</button>
-    </div>`).join("");
-}
+const cop = n => "$" + Number(n).toLocaleString("es-CO");
+const img = p => "/img/" + (p.imagen || "");
 
-function agregar(id) {
-  const p = productos.find(x => x.id === id);
-  const e = carrito.find(x => x.id === id);
-  if (e) e.cantidad++; else carrito.push({ id: p.id, nombre: p.nombre, precio: Number(p.precio), cantidad: 1 });
-  guardar();
-  render();
-}
-
-async function guardar() {
-  await fetch("/api/carrito/" + SESION, {
-    method: "POST", headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ items: carrito })
-  });
-}
-
-function render() {
-  const cont = carrito.reduce((s, i) => s + i.cantidad, 0);
-  const total = carrito.reduce((s, i) => s + i.precio * i.cantidad, 0);
-  document.getElementById("count").textContent = cont;
-  document.getElementById("total").textContent = total.toLocaleString();
-  document.getElementById("cartItems").innerHTML = carrito.length
-    ? carrito.map(i => `<div class="item"><span>${i.nombre} x${i.cantidad}</span><span>$${(i.precio*i.cantidad).toLocaleString()}</span></div>`).join("")
-    : "<p style='color:#9aa3b2'>Vacio</p>";
-}
-
-function toggleCart() { document.getElementById("drawer").classList.toggle("open"); }
-
-async function checkout() {
-  const cliente = document.getElementById("cliente").value;
-  const email = document.getElementById("email").value;
-  if (!cliente || !email || !carrito.length) { alert("Completa nombre, correo y agrega productos"); return; }
-  const r = await fetch("/api/checkout", {
-    method: "POST", headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ cliente, email, items: carrito, sesion: SESION })
-  });
-  const d = await r.json();
-  if (d.ok) {
-    document.getElementById("result").innerHTML =
-      `<div class="msg">Pedido #${d.pedidoId} confirmado. Total $${d.total.toLocaleString()}. Revisa el correo en MailHog.</div>`;
-    carrito = []; render();
-  } else {
-    alert("Error: " + (d.error || "desconocido"));
+async function init(){
+  try{
+    const [pr, ct] = await Promise.all([
+      fetch("/api/productos").then(r=>r.json()),
+      fetch("/api/categorias").then(r=>r.json())
+    ]);
+    productos = pr; pintarCats(ct); render(); renderCarrito();
+  }catch(e){
+    document.getElementById("grid").innerHTML = "<div class='empty'>No se pudieron cargar los productos.</div>";
   }
 }
 
-cargar();
-render();
+function pintarCats(cats){
+  const total = cats.reduce((s,c)=>s+c.total,0);
+  let html = `<button class="pill active" data-c="Todos" onclick="filtrar('Todos')">Todos</button>`;
+  html += cats.map(c=>`<button class="pill" data-c="${c.categoria}" onclick="filtrar('${c.categoria}')">${c.categoria}</button>`).join("");
+  document.getElementById("cats").innerHTML = html;
+}
+
+function filtrar(cat){
+  catActiva = cat; termino = ""; document.getElementById("q").value = "";
+  document.querySelectorAll(".pill").forEach(p=>p.classList.toggle("active", p.dataset.c===cat));
+  document.getElementById("secTitle").textContent = cat==="Todos" ? "Catálogo completo" : cat;
+  cerrarModal(); window.scrollTo({top:360,behavior:"smooth"}); render();
+}
+function buscar(v){
+  termino = v.trim().toLowerCase();
+  if(termino){ catActiva="Todos"; document.querySelectorAll(".pill").forEach(p=>p.classList.toggle("active",p.dataset.c==="Todos")); }
+  document.getElementById("secTitle").textContent = termino ? `Resultados para "${v}"` : "Catálogo completo";
+  render();
+}
+function visibles(){
+  return productos.filter(p=>{
+    const okCat = catActiva==="Todos" || p.categoria===catActiva;
+    const okQ = !termino || p.nombre.toLowerCase().includes(termino) || (p.descripcion||"").toLowerCase().includes(termino);
+    return okCat && okQ;
+  });
+}
+
+function render(){
+  const lista = visibles();
+  document.getElementById("resCount").textContent = lista.length + " producto" + (lista.length!==1?"s":"");
+  if(!lista.length){ document.getElementById("grid").innerHTML = "<div class='empty'>No encontramos productos.</div>"; return; }
+  document.getElementById("grid").innerHTML = lista.map(p=>{
+    const desc = p.precio_anterior ? Math.round((1 - p.precio/p.precio_anterior)*100) : 0;
+    return `<div class="card" onclick="verProducto(${p.id})">
+      <div class="tile">
+        <span class="plat">${p.plataforma||""}</span>
+        ${desc?`<span class="off">-${desc}%</span>`:""}
+        <img src="${img(p)}" alt="${p.nombre}" loading="lazy">
+      </div>
+      <div class="body">
+        <span class="tag">${p.categoria}</span>
+        <h3>${p.nombre}</h3>
+        <div class="rate"><b>★</b> ${p.rating}</div>
+        <div class="price-row">
+          <span class="price">${cop(p.precio)}</span>
+          ${p.precio_anterior?`<span class="old">${cop(p.precio_anterior)}</span>`:""}
+        </div>
+        <button class="add" onclick="event.stopPropagation();agregar(${p.id})">Agregar al carrito</button>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+function verProducto(id){
+  const p = productos.find(x=>x.id===id);
+  const desc = p.precio_anterior ? Math.round((1 - p.precio/p.precio_anterior)*100) : 0;
+  document.getElementById("mbox").innerHTML = `
+    <div class="mtile">
+      ${desc?`<span class="off">-${desc}%</span>`:""}
+      <img src="${img(p)}" alt="${p.nombre}">
+    </div>
+    <div class="mbody">
+      <button class="x mx" onclick="cerrarModal()">×</button>
+      <span class="tag">${p.categoria} · ${p.plataforma||""}</span>
+      <h2>${p.nombre}</h2>
+      <div class="rate"><b style="color:var(--gold)">★</b> ${p.rating} / 5</div>
+      <p>${p.descripcion||""}</p>
+      <div class="mstock">✓ En stock: ${p.stock} unidades</div>
+      <div class="mprice">
+        <span class="price">${cop(p.precio)}</span>
+        ${p.precio_anterior?`<span class="old">${cop(p.precio_anterior)}</span>`:""}
+      </div>
+      <button class="add" style="font-size:15px;padding:13px" onclick="agregar(${p.id});cerrarModal()">Agregar al carrito</button>
+    </div>`;
+  document.getElementById("modal").classList.add("on");
+}
+function cerrarModal(){ document.getElementById("modal").classList.remove("on"); }
+
+function agregar(id){
+  const p = productos.find(x=>x.id===id);
+  const e = carrito.find(x=>x.id===id);
+  if(e) e.cantidad++; else carrito.push({id:p.id,nombre:p.nombre,precio:Number(p.precio),imagen:p.imagen,cantidad:1});
+  persistir(); toast(p.nombre + " agregado al carrito");
+}
+function cambiar(id,d){
+  const e = carrito.find(x=>x.id===id); if(!e) return;
+  e.cantidad += d; if(e.cantidad<=0) carrito = carrito.filter(x=>x.id!==id);
+  persistir();
+}
+function quitar(id){ carrito = carrito.filter(x=>x.id!==id); persistir(); }
+
+function persistir(){
+  localStorage.setItem("nexus_cart", JSON.stringify(carrito));
+  fetch("/api/carrito/"+SESION,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({items:carrito})}).catch(()=>{});
+  renderCarrito();
+}
+
+function renderCarrito(){
+  const cont = carrito.reduce((s,i)=>s+i.cantidad,0);
+  const total = carrito.reduce((s,i)=>s+i.precio*i.cantidad,0);
+  document.getElementById("count").textContent = cont;
+  document.getElementById("total").textContent = total.toLocaleString("es-CO");
+  const ship = document.getElementById("ship");
+  if(total===0) ship.innerHTML = "";
+  else if(total>=300000) ship.innerHTML = "Tienes <b>envío gratis</b> en este pedido";
+  else ship.innerHTML = `Agrega <b>${cop(300000-total)}</b> más y obtén envío gratis`;
+  document.getElementById("cartItems").innerHTML = carrito.length
+    ? carrito.map(i=>`<div class="citem">
+        <div class="cthumb"><img src="/img/${i.imagen||''}" alt=""></div>
+        <div class="cinfo">
+          <h4>${i.nombre}</h4>
+          <div class="cp">${cop(i.precio*i.cantidad)}</div>
+          <div class="qty">
+            <button onclick="cambiar(${i.id},-1)">−</button>
+            <span>${i.cantidad}</span>
+            <button onclick="cambiar(${i.id},1)">+</button>
+            <button class="rm" onclick="quitar(${i.id})">Quitar</button>
+          </div>
+        </div>
+      </div>`).join("")
+    : "<p style='color:var(--muted);text-align:center;padding:50px 0'>Tu carrito está vacío</p>";
+}
+
+function toggleCart(){
+  document.getElementById("drawer").classList.toggle("open");
+  document.getElementById("overlay").classList.toggle("on");
+}
+
+async function checkout(){
+  const cliente = document.getElementById("cliente").value.trim();
+  const email = document.getElementById("email").value.trim();
+  const telefono = document.getElementById("telefono").value.trim();
+  const direccion = document.getElementById("direccion").value.trim();
+  if(!cliente || !email || !carrito.length){ toast("Completa nombre, correo y agrega productos"); return; }
+  try{
+    const r = await fetch("/api/checkout",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({cliente,email,telefono,direccion,items:carrito,sesion:SESION})});
+    const d = await r.json();
+    if(d.ok){
+      document.getElementById("result").innerHTML =
+        `<div class="msg"><b>Pedido #${d.pedidoId} confirmado.</b> Total ${cop(d.total)}. Revisa el correo en <a href="/mail/" target="_blank">MailHog</a>.</div>`;
+      carrito = []; persistir();
+      ["cliente","email","telefono","direccion"].forEach(id=>document.getElementById(id).value="");
+      toast("Compra realizada con éxito");
+    } else toast("Error: " + (d.error||"desconocido"));
+  }catch(e){ toast("No se pudo conectar con el servidor"); }
+}
+
+function toast(msg){
+  const t = document.createElement("div");
+  t.className="toast"; t.textContent=msg;
+  document.getElementById("toasts").appendChild(t);
+  setTimeout(()=>{t.style.opacity="0";t.style.transition=".3s";setTimeout(()=>t.remove(),300)},2200);
+}
+
+let slideAct = 0;
+const slides = document.querySelectorAll(".slide");
+const dotsBox = document.getElementById("dots");
+slides.forEach((_,i)=>{ const d=document.createElement("button"); d.className="dot"+(i===0?" on":""); d.onclick=()=>irSlide(i); dotsBox.appendChild(d); });
+function irSlide(i){
+  slides[slideAct].classList.remove("on"); dotsBox.children[slideAct].classList.remove("on");
+  slideAct = i;
+  slides[slideAct].classList.add("on"); dotsBox.children[slideAct].classList.add("on");
+}
+setInterval(()=>irSlide((slideAct+1)%slides.length), 6000);
+
+init();
 </script>
 </body>
 </html>
